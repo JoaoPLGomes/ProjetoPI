@@ -4,6 +4,7 @@ var paises = ["Portugal","Brasil","Espanha","Alemanha"];
 var posicoes = ["GR","DF","MC","AV"]
 paises.sort();
 var contadorJogadores = 3;
+var contadorEquipas = 3
 
 
 function Jogador(nome,pais,posicao,altura,dataNascimento,id){
@@ -24,7 +25,7 @@ function Equipa(nome,acronimo,url,pais,descricao,id){
     this.acronimo =acronimo;
     this.url = url;
     this.descricao = descricao || "";
-    this.id = equipas.length -1;
+    this.id = id || contadorEquipas;
 }
 
 function Competicao(nome,equipasCompeticao){
@@ -34,12 +35,15 @@ function Competicao(nome,equipasCompeticao){
 
 mostrarHomePage();
 equipas.push(new Equipa("Sem Equipa","","","",-1,""));
-equipas.push(new Equipa("Real Madrid","RM","www.realmadrid.com","Espanha",""));
-equipas.push(new Equipa("Barcelona","BCL","www.barcelona.com","Espanha",""));
+equipas.push(new Equipa("Real Madrid","RM","www.realmadrid.com","Espanha","",1));
+equipas.push(new Equipa("Barcelona","BCL","www.barcelona.com","Espanha","",2));
 equipas[1].jogadores.push(new Jogador("Ronaldo","Portugal","AV",1.85,"05/02/1985",1));
+equipas[2].jogadores.push(new Jogador("Ronaldo","Portugal","AV",1.85,"05/02/1985",1));
 equipas[0].jogadores.push(new Jogador("Marcelo","Brasil","DF",1.78,"12/05/1988",2));
 
 function mostrarJogadores (){
+    var idJogadoresTabela = [];
+    
     var br = document.createElement("BR");
 
     var errosDiv = document.createElement("DIV");
@@ -85,7 +89,9 @@ function mostrarJogadores (){
         
         for(var k = 0 ; k< equipas[i].jogadores.length;k++){
             
-           
+               if(!idJogadoresTabela.includes(equipas[i].jogadores[k].id)){
+
+               
                 
                 var trJogador = document.createElement("TR");
                 var tdJogadorCheck = document.createElement("td");
@@ -93,8 +99,12 @@ function mostrarJogadores (){
                 tdJogadorCheckBox.type = "checkbox";
                 tdJogadorCheck.appendChild(tdJogadorCheckBox);
                 var tdJogadorNome = document.createElement("td");
+                var jogadorLink = document.createElement("a");
+                
+                //jogadorLink.addEventListener("click",alert("LOL"));
                 var jogadorNomeText = document.createTextNode(equipas[i].jogadores[k].nome);
-                tdJogadorNome.appendChild(jogadorNomeText);
+                jogadorLink.appendChild(jogadorNomeText);
+                tdJogadorNome.appendChild(jogadorLink);
                 var tdJogadorPais = document.createElement("td");
                 var jogadorPaisText = document.createTextNode(equipas[i].jogadores[k].pais);
                 tdJogadorPais.appendChild(jogadorPaisText);
@@ -111,7 +121,14 @@ function mostrarJogadores (){
                 var jogadorIdText = document.createTextNode(equipas[i].jogadores[k].id);
                 tdJogadorId.appendChild(jogadorIdText);
                 tdJogadorId.style.display = "none";
-
+                
+                $(jogadorLink).click(function(){ 
+                    
+                    personalPage("jogador",this.parentElement.parentElement.cells[6].firstChild.textContent);
+                    
+                   
+                    
+                     return false; });
                 trJogador.appendChild(tdJogadorCheck);
                 trJogador.appendChild(tdJogadorNome);
                 trJogador.appendChild(tdJogadorPais);
@@ -121,8 +138,9 @@ function mostrarJogadores (){
                 trJogador.appendChild(tdJogadorId);
 
                 tableBody.appendChild(trJogador);
-            
-
+                idJogadoresTabela.push(parseInt(jogadorIdText.textContent));
+                
+               }
         }
     }
 
@@ -572,10 +590,24 @@ function mostrarEquipas(){
         }else {
             for(var k = 1; k <equipas.length;k++){
                 var equipaId = eval(row.cells[6].firstChild.textContent);
-
+                var isInTeam = false;
                 if (equipaId === equipas[k].id){
                     equipas[k].jogadores.forEach(function(jogador) {
-                        equipas[0].jogadores.push(jogador);
+                        for (var l = 1; l <equipas.length;l++){
+
+                            if (! (equipaId === equipas[l].id)){
+                                
+                                for (var m = 0; m <equipas[l].jogadores.length;m++){
+                                    if(jogador.id === equipas[l].jogadores[m].id){
+                                        isInTeam = true;
+                                    }
+                                }
+                            }
+                        }
+                        if(!isInTeam){
+                            equipas[0].jogadores.push(jogador);
+                        }
+                        
                     }, this);
                     equipas.splice(k,1);
                     document.getElementById("table").deleteRow(i + 1);
@@ -789,17 +821,24 @@ if(nome === void 0 || !isNaN(nome) || nome === ""){
 function personalPage(tipo,id){
     var image = document.createElement("IMG");
     image.id = "personalImage";
+    var divAll = document.createElement("DIV");
+    divAll.id = "divAll";
+    deleteInfo();
 
-    if(tipo === "jogador"){
+    if(tipo.toString() == "jogador"){
 
-        var equipas = document.createElement("P");
-        var equipasText = document.createTextNode("");
-
-        image.src = "..\images\defaultPic.jpg";
-        document.getElementById("informacao").appendChild(image);
+        var divInfo = document.createElement("DIV");
+        divInfo.id = "divInfo";
+        image.src = "..\\images\\defaultPic.jpg";
+        
+        
+        loop1 :
         for(var i = 0 ; i<equipas.length;i++){
+            
             for(var k = 0; k<equipas[i].jogadores.length;k++){
-                if(equipas[i].jogadores[k].id === id){
+
+                if(equipas[i].jogadores[k].id  === parseInt(id)){
+                    
                     var nome = document.createElement("P");
                     var textNome = document.createTextNode("Nome : " + equipas[i].jogadores[k].nome);
                     nome.appendChild(textNome);
@@ -813,29 +852,39 @@ function personalPage(tipo,id){
                     var textDataNascimento = document.createTextNode("Altura : " + equipas[i].jogadores[k].dataNascimento);
                     dataNascimento.appendChild(textDataNascimento);
 
-                    document.getElementById("informacao").appendChild(nome);
-                    document.getElementById("informacao").appendChild(pais);
-                    document.getElementById("informacao").appendChild(altura);
-                    document.getElementById("informacao").appendChild(dataNascimento);
+                    var equipasParagraph = document.createElement("P");
+                    var equipasText = document.createTextNode("Equipas : ");
+                    var textoParaEquipas = "";
 
+                     for(var m = 0 ; m<equipas.length;m++){
+                        for(var n = 0; n<equipas[m].jogadores.length;n++){
+                            if(equipas[m].jogadores[n].id === parseInt(id)){
+
+                                textoParaEquipas +=  equipas[m].nome + ", ";
+
+
+                            }
+                        }
+        }
+
+                   
+                    equipasText.textContent += textoParaEquipas.slice(0,textoParaEquipas.length-2);
+                    divInfo.appendChild(nome);
+                    divInfo.appendChild(pais);
+                    divInfo.appendChild(altura);
+                    equipasParagraph.appendChild(equipasText);
+                    divInfo.appendChild(dataNascimento);
+                    divInfo.appendChild(equipasParagraph);
+                    break loop1;
                 }
             }
         }
 
-        for(var i = 0 ; i<equipas.length;i++){
-            for(var k = 0; k<equipas[i].jogadores.length;k++){
-                if(equipas[i].jogadores[k].id === id){
-
-                    equipasText.textContent += ", " + equipas[i].nome;
-
-
-                }
-            }
-        }
-
-        equipasText.textContent.splice(0,1);
-        equipas.appendChild(equipasText);
-        document.getElementById("informacao").appendChild(equipas);
+       
+        divAll.appendChild(image);
+        divAll.appendChild(divInfo);
+        document.getElementById("informacao").appendChild(divAll);
+       
     }
 
 }

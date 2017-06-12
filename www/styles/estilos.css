@@ -72,3 +72,20 @@ footer {
   color:grey;
   
 }
+
+#personalImage{
+    float:left;
+    margin: 30px;
+}
+
+#divInfo{
+    float:left;
+    margin-left: 60px;
+    margin-top: 40px;
+}
+
+#divAll {
+  width: 50%;
+  margin: 0 auto;
+  margin-top: 30px;
+}
